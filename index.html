@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gender Swap Beauty AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
+body{background:#0f0f0f;color:#fff;padding:15px}
+h1{text-align:center;margin:15px 0;font-size:24px;background:linear-gradient(90deg,#ff6ec7,#7b6cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.card{background:#1a1a1a;border-radius:16px;padding:15px;margin:10px 0;border:1px solid #333}
+#previewWrap{width:100%;aspect-ratio:3/4;background:#222;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+input[type=file]{width:100%;padding:12px;background:#222;border-radius:8px;border:1px dashed #555;color:#fff}
+.btnRow{display:flex;gap:10px;margin:12px 0}
+button{flex:1;padding:14px;border:0;border-radius:12px;font-weight:bold;cursor:pointer}
+#femaleBtn{background:linear-gradient(90deg,#ff4da6,#ff8cc6);color:#fff}
+#maleBtn{background:linear-gradient(90deg,#4d8cff,#6ecfff);color:#fff}
+.makeupGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.makeupItem{background:#222;padding:10px;border-radius:10px}
+.dot{width:28px;height:28px;border-radius:50%;border:2px solid #444;display:inline-block;margin:3px;cursor:pointer}
+.dot.active{border-color:#fff}
+#downloadBtn{background:#fff;color:#000;width:100%;margin-top:12px;display:none}
+</style>
+</head>
+<body>
+<h1>💄 Gender Swap Beauty AI ✨</h1>
+<div class="card">
+<input type="file" id="upload" accept="image/*">
+<div id="previewWrap"><span style="color:#666">Photo එක Upload කරන්න</span></div>
+<div class="btnRow">
+<button id="femaleBtn">✨ Female Makeup</button>
+<button id="maleBtn">💪 Male Look</button>
+</div>
+<button id="downloadBtn">📥 Download</button>
+</div>
+<div class="card">
+<div class="makeupGrid">
+<div class="makeupItem"><label>Lipstick</label><br><input type="range" id="lipRange" min="0" max="100" value="70"><div id="lipColors"></div></div>
+<div class="makeupItem"><label>Blush</label><br><input type="range" id="blushRange" min="0" max="100" value="40"></div>
+<div class="makeupItem"><label>Skin Smooth</label><br><input type="range" id="smoothRange" min="0" max="100" value="60"></div>
+<div class="makeupItem"><label>Eye Makeup</label><br><input type="range" id="eyeRange" min="0" max="100" value="50"></div>
+</div>
+</div>
+<canvas id="canvas" style="display:none"></canvas>
+<script>
+const upload=document.getElementById('upload'),wrap=document.getElementById('previewWrap'),canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+let img=new Image(),mode='female',lipColor='#e93a6e';
+const palette=['#e93a6e','#c7003b','#ff69b4','#b1003a','#ff8a9d','#9d2a4a'],el=document.getElementById('lipColors');
+palette.forEach((c,i)=>{const d=document.createElement('div');d.className='dot'+(i==0?' active':'');d.style.background=c;d.onclick=()=>{lipColor=c;document.querySelectorAll('.dot').forEach(x=>x.classList.remove('active'));d.classList.add('active');render();};el.appendChild(d);});
+upload.onchange=e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f);img.onload=()=>{canvas.width=img.width;canvas.height=img.height;render();wrap.innerHTML='';wrap.appendChild(canvas);canvas.style.display='block';document.getElementById('downloadBtn').style.display='block';};img.src=u;};
+function render(){if(!img.src)return;const w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+const lipInt=document.getElementById('lipRange').value/100,blushInt=document.getElementById('blushRange').value/100,smoothInt=document.getElementById('smoothRange').value/100,eyeInt=document.getElementById('eyeRange').value/100;
+if(smoothInt>0){ctx.globalAlpha=smoothInt*0.4;ctx.filter=`blur(${smoothInt*3}px) brightness(1.1)`;ctx.drawImage(img,0,0,w,h);ctx.filter='none';ctx.globalAlpha=1;}
+if(mode==='female'){ctx.globalCompositeOperation='soft-light';ctx.fillStyle=`rgba(255,180,200,${0.15+blushInt*0.2})`;ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';
+ctx.fillStyle=lipColor;ctx.globalAlpha=0.75*lipInt;ctx.beginPath();ctx.ellipse(w*0.5,h*0.68,w*0.16,h*0.04,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ctx.fillStyle=`rgba(255,120,150,${0.25*blushInt})`;ctx.beginPath();ctx.ellipse(w*0.32,h*0.55,w*0.1,h*0.06,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(w*0.68,h*0.55,w*0.1,h*0.06,0,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=`rgba(30,30,30,${0.6*eyeInt})`;ctx.lineWidth=h*0.008;ctx.beginPath();ctx.moveTo(w*0.32,h*0.42);ctx.quadraticCurveTo(w*0.4,h*0.4,w*0.48,h*0.42);ctx.stroke();ctx.beginPath();ctx.moveTo(w*0.52,h*0.42);ctx.quadraticCurveTo(w*0.6,h*0.4,w*0.68,h*0.42);ctx.stroke();}
+else{ctx.globalCompositeOperation='soft-light';ctx.fillStyle='rgba(80,60,40,0.18)';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';
+ctx.fillStyle='rgba(40,30,20,0.22)';ctx.beginPath();ctx.ellipse(w*0.5,h*0.75,w*0.22,h*0.18,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=0.85;ctx.filter='contrast(1.15) saturate(0.8)';ctx.drawImage(img,0,0,w,h);ctx.filter='none';ctx.globalAlpha=1;}}
+document.getElementById('femaleBtn').onclick=()=>{mode='female';render();};document.getElementById('maleBtn').onclick=()=>{mode='male';render();};
+['lipRange','blushRange','smoothRange','eyeRange'].forEach(id=>{document.getElementById(id).oninput=render;});
+document.getElementById('downloadBtn').onclick=()=>{const a=document.createElement('a');a.download='gender-swap.png';a.href=canvas.toDataURL();a.click();};
+</script>
+</body>
+  </html>
